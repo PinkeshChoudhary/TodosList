@@ -1,36 +1,60 @@
-import React ,{useState} from 'react'
-import { Todoitem } from './Todoitem'
-
+import React, { useState } from "react";
+import { Todoitem } from "./Todoitem";
+import { AddToDo } from "./AddToDo";
 export const Todo = (props) => {
-    const [todotext , setToDoText] = useState("")
-    const [tododesc , setToDoDesc] = useState("")
-       
-    const handleSubmit =(e) =>{
-        e.preventDefault()
-        if(todotext){
-        props.submitHandler(todotext, tododesc)
-    
-        setToDoText("")
-        }
-        else{
-            alert('fields can not be empty')
-        }
+  const [todolist, setToDoList] = useState(props.todos);
+  const [edittodo, setEditToDo] = useState(null);
+  const handleSubmit = (e, todotitle, tododesc) => {
+    e.preventDefault();
+    if (!edittodo) {
+      const newtodo = {
+        id: todolist.length + 1,
+        title: todotitle,
+        desc: tododesc,
+      };
+      const newlist = [...todolist, newtodo];
+      setToDoList(newlist);
+    }else{
+      const restarr =todolist.filter(todo => todo.id!==edittodo.id)
+      console.log(restarr)
+      const editedobj ={
+        id : edittodo.id,
+        title : todotitle,
+        desc : tododesc
       }
-   
+      let newarr = [...restarr , editedobj]
+      console.log(newarr , 'newarr')
+      newarr = newarr.sort((a,b)=> {
+        return a.id-b.id
+       })
+       setToDoList(newarr)
+    }
+  };
+  
+  const deletehandler = (id) => {
+    const newlistdelete = todolist.filter((todo) => {
+      return todo.id !== id;
+    });
+    setToDoList(newlistdelete);
+  };
+  const editHandler = (td) => {
+    //  console.log(td)
+    setEditToDo(td);
+  };
+
   return (
     <div>
-        <p>todos list</p>
-
-        <div>{props.todos.map((todo, index) =>{
-            return  <Todoitem todo={todo} key={index} onDelete ={props.onDelete} />
-            
-        })}</div>
-        <form onSubmit={(e) =>handleSubmit(e)}>
-            <input type= 'text' value={todotext} onChange={(e)=>setToDoText(e.target.value)} placeholder = 'title'/>
-            <input type ='text' value={tododesc} onChange ={(e) =>setToDoDesc(e.target.value)} placeholder = 'desc'/>
-            <button type='submit'>AddTodo</button>
-        </form>
-      
-     </div>
-  )
-}
+      <AddToDo handleSubmit={handleSubmit} edittodo={edittodo} />
+      {todolist.map((todo) => {
+        return (
+          <Todoitem
+            todo={todo}
+            key={todo.id}
+            deletehandler={deletehandler}
+            editHandler={editHandler}
+          />
+        );
+      })}
+    </div>
+  );
+};
